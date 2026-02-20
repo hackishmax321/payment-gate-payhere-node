@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
     origin: process.env.FRONTEND_URL,
-    credentials: true
+    credentials: true,
+    allowedHeaders: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -157,6 +159,7 @@ app.get('/api/payment/status/:orderId', (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+    console.log("Received")
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
