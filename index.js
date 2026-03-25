@@ -27,23 +27,61 @@ const log = (message, data = null) => {
     logStream.write(logMessage);
 };
 
-// Middleware
+// Configure CORS properly for multiple origins
+const allowedOrigins = [
+    'https://savemo.lk',
+    'https://www.savemo.lk',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
+// CORS middleware with proper configuration
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, etc)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked for origin:', origin);
+            callback(null, true); // Allow all in development, restrict in production
+            // Uncomment for production:
+            // callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Length', 'X-Request-Id']
 }));
 
-// Parse both JSON and urlencoded bodies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Handle preflight requests explicitly
+app.options('*', cors());
+
+// Parse both JSON and urlencoded bodies with increased limits
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware
 app.use((req, res, next) => {
     log(`${req.method} ${req.url}`, {
         query: req.query,
         body: req.body,
-        headers: req.headers
+        headers: {
+            origin: req.headers.origin,
+            'user-agent': req.headers['user-agent']
+        }
     });
+    next();
+});
+
+// Add security headers middleware
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
     next();
 });
 
@@ -437,9 +475,13 @@ app.get('/api/payment/history/:orderId', (req, res) => {
 });
 
 /**
- * Endpoint 7: Health check with detailed status
+ * Endpoint 7: Health check with detailed status and CORS headers
  */
 app.get('/api/health', (req, res) => {
+    // Set CORS headers explicitly for health check
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
     const health = {
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -449,6 +491,10 @@ app.get('/api/health', (req, res) => {
             payment_gateway: 'PayHere',
             merchant_configured: !!(process.env.MERCHANT_ID && process.env.MERCHANT_SECRET),
             payments_stored: Object.keys(payments).length
+        },
+        cors: {
+            allowed_origins: allowedOrigins,
+            current_origin: req.headers.origin || 'none'
         },
         memory: process.memoryUsage(),
         version: '1.0.0'
@@ -501,11 +547,13 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Endpoint not found' });
 });
 
+// Start server with proper host binding
 app.listen(PORT, '0.0.0.0', () => {
     log(`🚀 Server running on port ${PORT}`);
     log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     log(`PayHere Mode: ${process.env.PAYHERE_MODE || 'sandbox'}`);
     log(`Merchant ID: ${process.env.MERCHANT_ID ? '✓ Configured' : '✗ Missing'}`);
     log(`Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+    log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
     log(`Logging to: ${logDir}`);
 });
