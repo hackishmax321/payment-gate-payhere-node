@@ -46,9 +46,12 @@ app.use(cors({
             callback(null, true);
         } else {
             console.log('CORS blocked for origin:', origin);
-            callback(null, true); // Allow all in development, restrict in production
-            // Uncomment for production:
-            // callback(new Error('Not allowed by CORS'));
+            // Allow all in development, restrict in production
+            if (process.env.NODE_ENV === 'production') {
+                callback(new Error('Not allowed by CORS'));
+            } else {
+                callback(null, true);
+            }
         }
     },
     credentials: true,
@@ -57,8 +60,10 @@ app.use(cors({
     exposedHeaders: ['Content-Length', 'X-Request-Id']
 }));
 
-// Handle preflight requests explicitly
-app.options('*', cors());
+// Handle preflight requests - FIXED: use app.options with proper route
+// Instead of app.options('*', cors()), we use app.options with cors middleware
+// and let the cors() middleware handle OPTIONS requests automatically
+// The cors middleware already handles OPTIONS preflight requests when configured properly
 
 // Parse both JSON and urlencoded bodies with increased limits
 app.use(bodyParser.json({ limit: '10mb' }));

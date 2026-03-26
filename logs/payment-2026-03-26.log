@@ -1,0 +1,19 @@
+[2026-03-26T05:32:26.480Z] 🚀 Server running on port 5000 
+[2026-03-26T05:32:26.480Z] Environment: development 
+[2026-03-26T05:32:26.481Z] PayHere Mode: sandbox 
+[2026-03-26T05:32:26.481Z] Merchant ID: ✓ Configured 
+[2026-03-26T05:32:26.482Z] Frontend URL: http://localhost:5173 
+[2026-03-26T05:32:26.484Z] Allowed CORS origins: https://savemo.lk, https://www.savemo.lk, http://localhost:5173, http://localhost:3000, http://localhost:5173 
+[2026-03-26T05:32:26.485Z] Logging to: F:\Projects\Three.JS\ecom\backend\logs 
+[2026-03-26T05:33:26.450Z] Payments saved to file 
+[2026-03-26T05:33:27.117Z] Loaded existing payments {
+  "count": 0
+}
+[2026-03-26T05:33:27.142Z] 🚀 Server running on port 5000 
+[2026-03-26T05:33:27.143Z] Environment: development 
+[2026-03-26T05:33:27.143Z] PayHere Mode: sandbox 
+[2026-03-26T05:33:27.144Z] Merchant ID: ✓ Configured 
+[2026-03-26T05:33:27.144Z] Frontend URL: http://localhost:5173 
+[2026-03-26T05:33:27.144Z] Allowed CORS origins: https://savemo.lk, https://www.savemo.lk, http://localhost:5173, http://localhost:3000, http://localhost:5173 
+[2026-03-26T05:33:27.145Z] Logging to: F:\Projects\Three.JS\ecom\backend\logs 
+[2026-03-26T05:34:27.120Z] Payments saved to file 
